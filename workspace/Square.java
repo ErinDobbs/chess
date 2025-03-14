@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.text.Highlighter.Highlight;
 
 
 //Please read the following class carefully! It represents a single chess board square and is what you'll be using
@@ -26,12 +27,18 @@ public class Square extends JComponent {
     //the coordinates of the square.
     private int row;
     private int col;
-    
+    private Color myColor;
     
     public Square(Board b, boolean isWhite, int row, int col) {
         
         this.b = b;
         this.color = isWhite;
+        if(color){
+            myColor = new Color(221,192,127);
+        }
+        else{
+            myColor = new Color(101,67,33);
+        }
         this.dispPiece = true;
         this.row = row;
         this.col = col;
@@ -74,15 +81,33 @@ public class Square extends JComponent {
         return p;
     }
 
+    public void highlightSquare(){
+      myColor= Color.red;
+    }
+
+    public void unhilight(){
+        if(color){
+            myColor = new Color(221,192,127);
+        }
+        else{
+            myColor = new Color(101,67,33);
+        }
+
+    }
     
+
+
+
+
+
+
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        if (this.color) {
-            g.setColor(new Color(221,192,127));
-        } else {
-            g.setColor(new Color(101,67,33));
-        }
+
+            g.setColor(myColor);
+        
         
         g.fillRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
         
