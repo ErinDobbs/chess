@@ -5,9 +5,6 @@
 //  General description: makes the board for chess
 //
 
-
-
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -100,11 +97,12 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         if (sq.isOccupied()) {
             currPiece = sq.getOccupyingPiece();
             fromMoveSquare = sq;
-
-            if ((!currPiece.getColor() && whiteTurn) || (currPiece.getColor() && !whiteTurn)) {
+            System.out.println(currPiece.getColor() != whiteTurn);
+            if (currPiece.getColor() != whiteTurn) {
                 currPiece = null;
                 return;
             }
+
             ArrayList<Square> legalMoves = currPiece.getLegalMoves(this, fromMoveSquare);
             for (Square move : legalMoves) {
                 move.setBackground(Color.RED);
@@ -113,32 +111,54 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             sq.setDisplay(false);
         }
         repaint();
-         
+
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+
         Square endSquare = (Square) this.getComponentAt(new Point(e.getX(), e.getY()));
+
+        if (fromMoveSquare != null) {
+            fromMoveSquare.setDisplay(true);
+        }
 
         if (currPiece != null && endSquare != null) {
             ArrayList<Square> legalMoves = currPiece.getLegalMoves(this, fromMoveSquare);
 
             if (legalMoves.contains(endSquare)) {
+                Piece originalPiece = endSquare.getOccupyingPiece();
+// temp move 
                 endSquare.put(currPiece);
-                fromMoveSquare.put(null);
-                whiteTurn = !whiteTurn; 
-            } 
-         
-        
+                fromMoveSquare.removePiece();
 
-  
-     }
-           for(Square s: currPiece.getLegalMoves(this, fromMoveSquare)){
-            s.unhilight();
-            s.setBorder(null);
+
+					// Check if king is safe
+				 	boolean isInCheck = this.isKingInCheck(currPiece.getColor());
+	 // Undo the move
+     fromMoveSquare.put(currPiece);
+     endSquare.put(originalPiece);
+     if (!isInCheck) {
+        endSquare.put(currPiece);
+        fromMoveSquare.removePiece();
+        whiteTurn = !whiteTurn; // Change turn
+    }
+
+				 
+				 }
+
+
+
+            
+
+        }
+        if (currPiece != null) {
+            for (Square s : currPiece.getLegalMoves(this, fromMoveSquare)) {
+                s.unhilight();
+                s.setBorder(null);
+            }
         }
         currPiece = null;
-        fromMoveSquare.setDisplay(true); 
         repaint();
     }
 
@@ -147,8 +167,11 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         currX = e.getX() - 24;
         currY = e.getY() - 24;
 
-        for(Square s: currPiece.getLegalMoves(this, fromMoveSquare)){
-            s.highlightSquare();
+        if (currPiece != null) {
+            for (Square s : currPiece.getLegalMoves(this, fromMoveSquare)) {
+                s.highlightSquare();
+
+            }
         }
 
         repaint();
@@ -172,35 +195,35 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     private void initializePieces() {
         // Place rooks
-        board[0][0].put(new Piece(true, RESOURCES_WROOK_PNG));
-        board[0][7].put(new Piece(true, RESOURCES_WROOK_PNG));
-        board[7][0].put(new Piece(false, RESOURCES_BROOK_PNG));
-        board[7][7].put(new Piece(false, RESOURCES_BROOK_PNG));
+        board[0][0].put(new Rook(true, RESOURCES_WROOK_PNG));
+        board[0][7].put(new Rook(true, RESOURCES_WROOK_PNG));
+        board[7][0].put(new Rook(false, RESOURCES_BROOK_PNG));
+        board[7][7].put(new Rook(false, RESOURCES_BROOK_PNG));
 
         // Place knights
-        board[0][1].put(new Piece(true, RESOURCES_WKNIGHT_PNG));
-        board[0][6].put(new Piece(true, RESOURCES_WKNIGHT_PNG));
-        board[7][1].put(new Piece(false, RESOURCES_BKNIGHT_PNG));
-        board[7][6].put(new Piece(false, RESOURCES_BKNIGHT_PNG));
+        board[0][1].put(new Knight(true, RESOURCES_WKNIGHT_PNG));
+        board[0][6].put(new Knight(true, RESOURCES_WKNIGHT_PNG));
+        board[7][1].put(new Knight(false, RESOURCES_BKNIGHT_PNG));
+        board[7][6].put(new Knight(false, RESOURCES_BKNIGHT_PNG));
 
         // Place bishops
-        board[0][2].put(new Piece(true, RESOURCES_WBISHOP_PNG));
-        board[0][5].put(new Piece(true, RESOURCES_WBISHOP_PNG));
-        board[7][2].put(new Piece(false, RESOURCES_BBISHOP_PNG));
-        board[7][5].put(new Piece(false, RESOURCES_BBISHOP_PNG));
+        board[0][2].put(new Bishop(true, RESOURCES_WBISHOP_PNG));
+        board[0][5].put(new Bishop(true, RESOURCES_WBISHOP_PNG));
+        board[7][2].put(new Bishop(false, RESOURCES_BBISHOP_PNG));
+        board[7][5].put(new Bishop(false, RESOURCES_BBISHOP_PNG));
 
         // Place queens
-        board[0][3].put(new Piece(true, RESOURCES_WQUEEN_PNG));
-        board[7][3].put(new Piece(false, RESOURCES_BQUEEN_PNG));
+        board[0][3].put(new Queen(true, RESOURCES_WQUEEN_PNG));
+        board[7][3].put(new Queen(false, RESOURCES_BQUEEN_PNG));
 
         // Place kings
-        board[0][4].put(new Piece(true, RESOURCES_WKING_PNG));
-        board[7][4].put(new Piece(false, RESOURCES_BKING_PNG));
+        board[0][4].put(new King(true, RESOURCES_WKING_PNG));
+        board[7][4].put(new King(false, RESOURCES_BKING_PNG));
 
         // Place pawns
         for (int col = 0; col < 8; col++) {
-            board[1][col].put(new Piece(true, RESOURCES_WPAWN_PNG));
-            board[6][col].put(new Piece(false, RESOURCES_BPAWN_PNG));
+            board[1][col].put(new Assassin(true, RESOURCES_WPAWN_PNG));
+            board[6][col].put(new Assassin(false, RESOURCES_BPAWN_PNG));
         }
     }
 
@@ -218,5 +241,25 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     public Piece getCurrPiece() {
         return this.currPiece;
+    }
+
+    public boolean isKingInCheck(boolean kingColor) {
+
+        // Check if any opponent piece attacks king's square
+        for (Square[] row : board) {
+            for (Square square : row) {
+                if (square.isOccupied() && square.getOccupyingPiece().getColor() != kingColor) {
+                    ArrayList<Square> controlled = square.getOccupyingPiece().getControlledSquares(board, square);
+                    for (Square control : controlled) {
+                        if (control.isOccupied() && control.getOccupyingPiece() instanceof King
+                                && control.getOccupyingPiece().getColor() == kingColor) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+
     }
 }

@@ -71,8 +71,8 @@ public class Square extends JComponent {
         this.dispPiece = v;
     }
     
-    public void put(Piece p) {
-        this.occupyingPiece = p;
+    public void put(Piece currPiece) {
+        this.occupyingPiece = currPiece;
     }
     
     public Piece removePiece() {
@@ -115,6 +115,8 @@ public class Square extends JComponent {
             occupyingPiece.draw(g, this);
         }
     }
+
+   
     
     
 }
